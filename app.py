@@ -305,7 +305,6 @@ def extract_and_solve(url: str, task_id: str, auto_submit: bool = False) -> None
     except Exception as e:
         send(f"Error: {str(e)}", -1, error=True, detail=traceback.format_exc())
     finally:
-        progress_queues.pop(task_id, None)
         if driver and (HEADLESS or auto_submit or AUTO_SUBMIT):
             try:
                 driver.quit()
@@ -348,14 +347,17 @@ def progress_stream(task_id: str):
         if not q:
             yield f"data: {json.dumps({'error': True, 'message': 'Tarea no encontrada'})}\n\n"
             return
-        while True:
-            try:
-                event = q.get(timeout=90)
-                yield f"data: {json.dumps(event, ensure_ascii=False)}\n\n"
-                if event.get("done") or event.get("error"):
-                    break
-            except queue.Empty:
-                yield f"data: {json.dumps({'ping': True})}\n\n"
+        try:
+            while True:
+                try:
+                    event = q.get(timeout=90)
+                    yield f"data: {json.dumps(event, ensure_ascii=False)}\n\n"
+                    if event.get("done") or event.get("error"):
+                        break
+                except queue.Empty:
+                    yield f"data: {json.dumps({'ping': True})}\n\n"
+        finally:
+            progress_queues.pop(task_id, None)
 
     return Response(
         stream_with_context(generate()),
