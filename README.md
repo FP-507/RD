@@ -4,7 +4,7 @@ Agente que resuelve asignaciones de ReadWorks automáticamente. Pega el link, ha
 
 ---
 
-## Cómo funciona
+## Demo rápido
 
 ```
 URL de ReadWorks
@@ -22,63 +22,66 @@ El agente rellena el formulario
 
 ---
 
-## Requisitos
+## Despliegue en la nube (Render + GitHub)
 
-- Python 3.10 o superior
-- Cuenta en [Anthropic Console](https://console.anthropic.com) para obtener la API key
+> Esto te da una URL permanente accesible desde cualquier navegador.
+
+### 1 · Sube el proyecto a GitHub
+
+```bash
+git init
+git add .
+git commit -m "first commit"
+git remote add origin https://github.com/TU-USUARIO/RD.git
+git push -u origin main
+```
+
+### 2 · Crea el servicio en Render
+
+1. Ve a [render.com](https://render.com) e inicia sesión con tu cuenta de GitHub
+2. Haz clic en **New → Web Service**
+3. Selecciona el repo `RD`
+4. Render detecta el `render.yaml` automáticamente — no necesitas configurar nada más
+5. En la sección **Environment Variables** agrega:
+   ```
+   ANTHROPIC_API_KEY = sk-ant-...
+   ```
+6. Haz clic en **Deploy**
+
+### 3 · Accede a tu app
+
+Render te da una URL del tipo:
+```
+https://readworks-agent.onrender.com
+```
+
+Esa URL funciona desde cualquier dispositivo y se actualiza automáticamente cada vez que haces `git push`.
+
+> **Nota sobre el login:** La sesión del navegador se guarda en `browser_data/`. En Render free tier el disco es efímero, así que si el servidor se reinicia tendrás que iniciar sesión en ReadWorks de nuevo la primera vez que uses la app.
 
 ---
 
-## Instalación
+## Uso local (Windows)
 
 ```bash
-# 1. Clonar el repositorio
-git clone https://github.com/tu-usuario/RD.git
-cd RD
-
-# 2. Instalar dependencias
-pip install -r requirements.txt
-
-# 3. Instalar el navegador de Playwright
-playwright install chromium
-
-# 4. Configurar variables de entorno
-cp .env.example .env
-# Edita .env y agrega tu ANTHROPIC_API_KEY
+# Doble clic en start.bat
+# O desde la terminal:
+python app.py
 ```
+
+Abre [http://localhost:5000](http://localhost:5000) en tu navegador.
 
 ---
 
 ## Configuración (`.env`)
 
-| Variable           | Descripción                                               | Default  |
-|--------------------|-----------------------------------------------------------|----------|
-| `ANTHROPIC_API_KEY`| API key de Anthropic — **obligatoria**                    | —        |
-| `HEADLESS`         | `true` oculta el navegador, `false` lo muestra            | `false`  |
-| `AUTO_SUBMIT`      | `true` envía la asignación automáticamente al terminar    | `false`  |
+Copia `.env.example` como `.env` y rellena tus datos:
 
----
-
-## Uso
-
-### Windows
-Doble clic en `start.bat` — instala todo y abre el servidor.
-
-### Manual
-```bash
-python app.py
-```
-
-Luego abre [http://localhost:5000](http://localhost:5000) en tu navegador.
-
-### Pasos en la UI
-1. Abre tu asignación en ReadWorks y copia la URL
-2. Pégala en el campo y haz clic en **Resolver ✦**
-3. Si es la primera vez, inicia sesión en la ventana del navegador que se abre
-4. Espera a que el agente termine — el progreso se muestra en tiempo real
-5. Revisa las respuestas y haz clic en **Submit** en ReadWorks
-
-> **Primera sesión:** el agente guarda las cookies en `browser_data/` — las siguientes veces no pide login.
+| Variable           | Descripción                                            | Default  |
+|--------------------|--------------------------------------------------------|----------|
+| `ANTHROPIC_API_KEY`| API key de Anthropic — **obligatoria**                 | —        |
+| `HEADLESS`         | `true` oculta el navegador (usar en servidor)          | `false`  |
+| `AUTO_SUBMIT`      | `true` envía la asignación automáticamente al terminar | `false`  |
 
 ---
 
@@ -86,37 +89,22 @@ Luego abre [http://localhost:5000](http://localhost:5000) en tu navegador.
 
 ```
 RD/
-├── app.py                 # Backend Flask + lógica del agente
+├── app.py              # Backend Flask + lógica del agente
 ├── templates/
-│   └── index.html         # Interfaz gráfica (UI)
-├── browser_data/          # Sesión del navegador (generada automáticamente, no subir)
-├── .env                   # Variables de entorno privadas (no subir)
-├── .env.example           # Plantilla de configuración
-├── .gitignore
-├── requirements.txt
-└── start.bat              # Lanzador para Windows
+│   └── index.html      # Interfaz gráfica
+├── build.sh            # Script de build para Render
+├── render.yaml         # Configuración de despliegue en Render
+├── Procfile            # Comando de inicio (Railway / Heroku)
+├── requirements.txt    # Dependencias de Python
+├── start.bat           # Lanzador local para Windows
+├── .env                # Variables privadas (no subir — en .gitignore)
+├── .env.example        # Plantilla de configuración
+└── .gitignore
 ```
 
 ---
 
-## Despliegue en servidor (Render / Railway)
+## Requisitos
 
-1. Sube el proyecto a GitHub (`.env` y `browser_data/` ya están en `.gitignore`)
-2. Crea un nuevo servicio Web en [Render](https://render.com) o [Railway](https://railway.app)
-3. Agrega las variables de entorno desde el dashboard:
-   - `ANTHROPIC_API_KEY` = tu key
-   - `HEADLESS` = `true`
-4. Usa como comando de inicio: `python app.py`
-
-> En servidor siempre usa `HEADLESS=true` — no hay pantalla disponible.
-
----
-
-## Dependencias
-
-| Paquete        | Uso                                      |
-|----------------|------------------------------------------|
-| `flask`        | Servidor web y rutas HTTP                |
-| `anthropic`    | Cliente oficial de la API de Claude      |
-| `playwright`   | Automatización del navegador Chromium    |
-| `python-dotenv`| Carga de variables desde `.env`          |
+- Python 3.10+
+- API key de [Anthropic](https://console.anthropic.com)

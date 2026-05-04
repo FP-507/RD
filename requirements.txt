@@ -2,3 +2,4 @@ flask
 anthropic
 playwright
 python-dotenv
+gunicorn
