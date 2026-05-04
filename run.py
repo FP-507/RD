@@ -14,7 +14,7 @@ Cómo usarlo:
 """
 
 import os
-import subprocess
+import subprocess  # solo usado en setup()
 import sys
 import threading
 import time
@@ -57,23 +57,18 @@ def setup() -> None:
 
     # Paso 1: crear entorno virtual
     if not os.path.exists(VENV_DIR):
-        print("  [1/3] Creando entorno virtual...")
+        print("  [1/2] Creando entorno virtual...")
         subprocess.run(
             [sys.executable, "-m", "venv", VENV_DIR],
             check=True,
         )
 
     # Paso 2: instalar dependencias de Python
-    print("  [2/3] Instalando dependencias (flask, anthropic, playwright...)  ")
+    # selenium + webdriver-manager descargan ChromeDriver automáticamente en el primer uso,
+    # así que no se necesita ningún paso extra de instalación de navegador.
+    print("  [2/2] Instalando dependencias (flask, anthropic, selenium...)  ")
     subprocess.run(
         [venv_pip(), "install", "-r", os.path.join(BASE_DIR, "requirements.txt"), "-q"],
-        check=True,
-    )
-
-    # Paso 3: descargar Chromium para Playwright
-    print("  [3/3] Descargando Chromium (puede tardar un momento)...")
-    subprocess.run(
-        [venv_python(), "-m", "playwright", "install", "chromium"],
         check=True,
     )
 
@@ -100,16 +95,14 @@ def main() -> None:
         setup()
 
     # 2. Si no estamos dentro del venv, re-lanzar con el Python del venv.
-    #    Esto garantiza que flask, anthropic, etc. estén disponibles.
+    #    os.execv reemplaza el proceso actual en lugar de crear un hijo,
+    #    evitando el bloqueo de subprocess.run() con servidores que no terminan.
     if not in_venv():
         py = venv_python()
         if not os.path.exists(py):
-            # El venv existe pero el marcador estaba mal — correr setup de nuevo
-            open(MARKER, "w").close()
             os.remove(MARKER)
             setup()
-        result = subprocess.run([py] + sys.argv)
-        sys.exit(result.returncode)
+        os.execv(py, [py] + sys.argv)
 
     # 3. Lanzar la app (ya estamos dentro del venv)
     print("🚀  ReadWorks Agent corriendo en http://localhost:5000")

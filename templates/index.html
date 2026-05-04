@@ -447,7 +447,10 @@
       if (data.ping) return;  // Keepalive — ignorar
 
       if (data.error) {
-        showError(data.message || 'Error desconocido');
+        const msg = data.message || 'Error desconocido';
+        const detail = data.detail || '';
+        console.error('[ReadWorks Agent] Error:', msg, detail);
+        showError(msg, detail);
         eventSource.close();
         return;
       }
@@ -522,12 +525,13 @@
   }
 
   // ── Mostrar error y restaurar UI ─────────────────────────────────────────
-  function showError(msg) {
+  function showError(msg, detail = '') {
     const errMsg = document.getElementById('err-msg');
-    errMsg.textContent = '⚠ ' + msg;
+    errMsg.innerHTML = '⚠ ' + escapeHtml(msg) +
+      (detail ? `<pre style="margin-top:8px;font-size:11px;opacity:.7;white-space:pre-wrap;overflow:auto;max-height:160px">${escapeHtml(detail)}</pre>` : '');
     errMsg.style.display = 'block';
-    document.getElementById('solve-btn').disabled     = false;
-    document.getElementById('url-input').disabled     = false;
+    document.getElementById('solve-btn').disabled      = false;
+    document.getElementById('url-input').disabled      = false;
     document.getElementById('prog-card').style.display = 'none';
   }
 

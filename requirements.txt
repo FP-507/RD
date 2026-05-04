@@ -1,5 +1,5 @@
 flask
 anthropic
-playwright
 python-dotenv
-gunicorn
+selenium
+webdriver-manager

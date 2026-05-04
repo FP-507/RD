@@ -6,7 +6,7 @@ services:
   - type: web
     name: readworks-agent
     runtime: python
-    buildCommand: pip install -r requirements.txt && python -m playwright install chromium && python -m playwright install-deps chromium
+    buildCommand: pip install -r requirements-prod.txt && python -m playwright install chromium && python -m playwright install-deps chromium
     # --workers=1 --threads=8: necesario para que SSE funcione correctamente.
     # --timeout=300: evita que Render corte conexiones largas del agente.
     startCommand: gunicorn app:app --workers=1 --threads=8 --timeout=300 --bind 0.0.0.0:$PORT

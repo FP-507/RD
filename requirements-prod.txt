@@ -1,0 +1,4 @@
+# Dependencias para producción (Render / Railway)
+# Incluye gunicorn que solo funciona en Linux
+-r requirements.txt
+gunicorn
