@@ -1,0 +1,4 @@
+flask
+anthropic
+playwright
+python-dotenv

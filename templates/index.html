@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ReadWorks Agent</title>
+
+  <!-- Fuente principal -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+
+  <style>
+    /* ── Reset básico ─────────────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    /* ── Tokens de diseño ─────────────────────────────────────────────────── */
+    :root {
+      --bg:      #0d0d14;   /* Fondo general */
+      --s1:      #13131f;   /* Superficie de cards */
+      --s2:      #1a1a2a;   /* Superficie secundaria (inputs, log items) */
+      --border:  #ffffff0e; /* Borde sutil */
+      --primary: #6c63ff;   /* Color principal (botones, selección activa) */
+      --pg:      #8b84ff;   /* Variante clara del primario */
+      --accent:  #00d4aa;   /* Verde-turquesa para éxito y respuestas abiertas */
+      --danger:  #ff5e6c;   /* Rojo para errores */
+      --text:    #e8e8f0;   /* Texto principal */
+      --muted:   #6b6b88;   /* Texto secundario / placeholders */
+      --radius:  16px;      /* Radio base para cards */
+    }
+
+    /* ── Layout base ──────────────────────────────────────────────────────── */
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 32px 20px 60px;
+      /* Gradientes ambientales decorativos */
+      background-image:
+        radial-gradient(ellipse 80% 60% at 15%   0%, #6c63ff1a 0%, transparent 60%),
+        radial-gradient(ellipse 60% 40% at 85% 100%, #00d4aa14 0%, transparent 60%);
+    }
+
+    .wrapper {
+      width: 100%;
+      max-width: 700px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    /* ── Header ───────────────────────────────────────────────────────────── */
+    .header { text-align: center; padding: 10px 0 6px; }
+
+    .logo {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 8px;
+    }
+    .logo-icon {
+      width: 46px; height: 46px;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      border-radius: 13px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 24px;
+    }
+    .logo-name { font-size: 26px; font-weight: 700; letter-spacing: -.5px; }
+    .logo-name span { color: var(--pg); }
+    .tagline { font-size: 13px; color: var(--muted); }
+
+    /* ── Card genérica ────────────────────────────────────────────────────── */
+    .card {
+      background: var(--s1);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 26px;
+    }
+
+    /* ── Sección "¿Cómo se usa?" (colapsable) ────────────────────────────── */
+    .how-toggle {
+      display: flex; align-items: center; justify-content: space-between;
+      cursor: pointer; user-select: none;
+    }
+    .how-toggle-label { font-size: 13px; font-weight: 500; color: var(--muted); }
+    .how-toggle-arrow {
+      font-size: 12px; color: var(--muted);
+      transition: transform .25s;
+    }
+    .how-toggle-arrow.open { transform: rotate(180deg); }
+
+    .how-body { display: none; margin-top: 16px; }
+    .how-body.visible { display: block; }
+
+    .steps-how { display: flex; flex-direction: column; gap: 10px; }
+    .step-how  { display: flex; gap: 12px; align-items: flex-start; }
+
+    .step-num {
+      min-width: 24px; height: 24px;
+      background: var(--s2);
+      border: 1px solid var(--border);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 700; color: var(--pg);
+      flex-shrink: 0;
+    }
+    .step-desc { font-size: 13px; color: var(--muted); line-height: 1.5; padding-top: 3px; }
+    .step-desc strong { color: var(--text); }
+
+    /* ── Formulario de URL ────────────────────────────────────────────────── */
+    .label {
+      font-size: 12px; font-weight: 600; color: var(--muted);
+      text-transform: uppercase; letter-spacing: .05em;
+      margin-bottom: 9px;
+      display: block;
+    }
+    .input-row { display: flex; gap: 10px; }
+
+    .url-input {
+      flex: 1;
+      background: var(--s2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 15px;
+      font-size: 14px;
+      color: var(--text);
+      font-family: inherit;
+      outline: none;
+      transition: border-color .2s;
+    }
+    .url-input:focus { border-color: var(--primary); }
+    .url-input::placeholder { color: var(--muted); }
+
+    .options-row {
+      display: flex; align-items: center;
+      gap: 8px; margin-top: 12px;
+    }
+    .toggle-label {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 13px; color: var(--muted);
+      cursor: pointer; user-select: none;
+    }
+    .toggle-label input {
+      accent-color: var(--primary);
+      width: 15px; height: 15px; cursor: pointer;
+    }
+    .toggle-label:hover { color: var(--text); }
+
+    /* ── Botones ──────────────────────────────────────────────────────────── */
+    .btn {
+      padding: 12px 22px;
+      border-radius: 10px;
+      border: none;
+      font-size: 14px; font-weight: 600; font-family: inherit;
+      cursor: pointer;
+      transition: opacity .2s, transform .1s;
+      white-space: nowrap;
+    }
+    .btn:active  { transform: scale(.97); }
+    .btn:disabled { opacity: .38; cursor: not-allowed; }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--primary), var(--pg));
+      color: #fff;
+    }
+    .btn-primary:hover:not(:disabled) { opacity: .88; }
+
+    /* ── Mensaje de error inline ──────────────────────────────────────────── */
+    .error-msg { font-size: 13px; color: var(--danger); margin-top: 10px; display: none; }
+
+    /* ── Tarjeta de progreso ──────────────────────────────────────────────── */
+    #prog-card { display: none; }
+
+    .status-row { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+
+    .spinner {
+      width: 18px; height: 18px; flex-shrink: 0;
+      border: 2px solid var(--border);
+      border-top-color: var(--primary);
+      border-radius: 50%;
+      animation: spin .65s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .status-text { font-size: 14px; }
+
+    /* Barra de progreso */
+    .prog-track {
+      height: 6px; background: var(--s2);
+      border-radius: 99px; overflow: hidden;
+    }
+    .prog-fill {
+      height: 100%; width: 0%;
+      background: linear-gradient(90deg, var(--primary), var(--accent));
+      border-radius: 99px;
+      transition: width .5s ease;
+    }
+
+    /* Log de pasos en tiempo real */
+    .log {
+      margin-top: 14px;
+      max-height: 160px; overflow-y: auto;
+      display: flex; flex-direction: column; gap: 5px;
+    }
+    .log-item {
+      font-size: 12px; color: var(--muted);
+      padding: 5px 10px;
+      border-radius: 7px; background: var(--s2);
+      border-left: 3px solid transparent;
+      animation: fadeIn .25s ease;
+    }
+    .log-item.active { color: var(--text);    border-left-color: var(--primary); }
+    .log-item.done   { color: #00d4aa99;      border-left-color: var(--accent); }
+    .log-item.err    { color: var(--danger);  border-left-color: var(--danger); }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(3px); }
+      to   { opacity: 1; transform: none; }
+    }
+
+    /* Scrollbar del log */
+    .log::-webkit-scrollbar       { width: 3px; }
+    .log::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+
+    /* ── Tarjeta de resultados ────────────────────────────────────────────── */
+    #res-card { display: none; }
+
+    .success-bar {
+      display: flex; align-items: center; gap: 12px;
+      background: #00d4aa16; border: 1px solid #00d4aa2e;
+      border-radius: 11px; padding: 13px 16px;
+      font-size: 14px; color: var(--accent); font-weight: 500;
+      margin-bottom: 18px;
+    }
+    .success-icon { font-size: 20px; }
+
+    .submitted-bar {
+      display: flex; align-items: center; gap: 12px;
+      background: #6c63ff16; border: 1px solid #6c63ff2e;
+      border-radius: 11px; padding: 11px 16px;
+      font-size: 13px; color: var(--pg);
+      margin-bottom: 14px;
+    }
+
+    .res-header { display: flex; align-items: center; gap: 8px; margin-bottom: 16px; }
+    .res-title  { font-size: 15px; font-weight: 600; }
+
+    .pill {
+      font-size: 11px; font-weight: 600;
+      padding: 3px 9px; border-radius: 99px; letter-spacing: .03em;
+    }
+    .pill-mc   { background: #6c63ff22; color: var(--pg); }
+    .pill-open { background: #00d4aa22; color: var(--accent); }
+
+    .res-list { display: flex; flex-direction: column; gap: 9px; }
+
+    .res-item {
+      background: var(--s2); border: 1px solid var(--border);
+      border-radius: 11px; padding: 13px 15px;
+      display: flex; gap: 13px; align-items: flex-start;
+      animation: fadeIn .3s ease both;
+    }
+    .res-n { font-size: 11px; font-weight: 700; color: var(--muted); min-width: 22px; padding-top: 2px; }
+    .res-body { flex: 1; }
+    .res-type {
+      font-size: 10px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: .06em;
+      margin-bottom: 4px;
+    }
+    .res-type.mc   { color: var(--pg); }
+    .res-type.open { color: var(--accent); }
+    .res-ans { font-size: 13px; color: var(--text); line-height: 1.6; }
+
+    /* Botón secundario para reiniciar */
+    .reset-btn {
+      width: 100%; margin-top: 8px; padding: 11px;
+      background: var(--s2); border: 1px solid var(--border); border-radius: 10px;
+      color: var(--muted); font-size: 13px; font-family: inherit;
+      cursor: pointer; transition: color .2s, border-color .2s;
+    }
+    .reset-btn:hover { color: var(--text); border-color: var(--primary); }
+  </style>
+</head>
+<body>
+<div class="wrapper">
+
+  <!-- ── Header ───────────────────────────────────────────────────────────── -->
+  <header class="header">
+    <div class="logo">
+      <div class="logo-icon" aria-hidden="true">📚</div>
+      <div class="logo-name">ReadWorks <span>Agent</span></div>
+    </div>
+    <p class="tagline">Pega el link — el agente lee, analiza y responde por ti</p>
+  </header>
+
+  <!-- ── Instrucciones de uso (colapsable) ─────────────────────────────────── -->
+  <section class="card" aria-label="Instrucciones de uso">
+    <div class="how-toggle" id="how-toggle" role="button" tabindex="0" aria-expanded="false">
+      <span class="how-toggle-label">¿Cómo se usa?</span>
+      <span class="how-toggle-arrow" id="how-arrow" aria-hidden="true">▾</span>
+    </div>
+    <div class="how-body" id="how-body" role="region">
+      <ol class="steps-how" style="margin-top:0">
+        <li class="step-how">
+          <div class="step-num" aria-hidden="true">1</div>
+          <p class="step-desc">Ve a <strong>ReadWorks</strong> y abre la asignación que quieres resolver.</p>
+        </li>
+        <li class="step-how">
+          <div class="step-num" aria-hidden="true">2</div>
+          <p class="step-desc">Copia la URL del navegador — debe verse como <strong>readworks.org/student-workspace/…</strong></p>
+        </li>
+        <li class="step-how">
+          <div class="step-num" aria-hidden="true">3</div>
+          <p class="step-desc">Pégala aquí abajo y haz clic en <strong>Resolver</strong>. El agente abre el navegador, lee el texto y llena todas las respuestas.</p>
+        </li>
+        <li class="step-how">
+          <div class="step-num" aria-hidden="true">4</div>
+          <p class="step-desc">Cuando termine, revisa las respuestas y haz clic en <strong>Submit</strong> en ReadWorks (o activa el envío automático).</p>
+        </li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- ── Formulario principal ──────────────────────────────────────────────── -->
+  <section class="card" aria-label="Formulario de asignación">
+    <label class="label" for="url-input">URL de la asignación</label>
+    <div class="input-row">
+      <input
+        id="url-input"
+        class="url-input"
+        type="url"
+        placeholder="https://www.readworks.org/student-workspace/..."
+        autocomplete="off"
+        aria-describedby="err-msg"
+      />
+      <button class="btn btn-primary" id="solve-btn">Resolver ✦</button>
+    </div>
+    <div class="options-row">
+      <label class="toggle-label" for="auto-submit-chk">
+        <input type="checkbox" id="auto-submit-chk" />
+        Enviar automáticamente al terminar
+      </label>
+    </div>
+    <p class="error-msg" id="err-msg" role="alert"></p>
+  </section>
+
+  <!-- ── Tarjeta de progreso (oculta hasta iniciar) ─────────────────────── -->
+  <section class="card" id="prog-card" aria-live="polite" aria-label="Progreso del agente">
+    <div class="status-row">
+      <div class="spinner" aria-hidden="true"></div>
+      <p class="status-text" id="status-text">Iniciando...</p>
+    </div>
+    <div class="prog-track" role="progressbar" aria-valuemin="0" aria-valuemax="100">
+      <div class="prog-fill" id="prog-fill"></div>
+    </div>
+    <div class="log" id="log" aria-label="Registro de pasos"></div>
+  </section>
+
+  <!-- ── Tarjeta de resultados (oculta hasta terminar) ─────────────────── -->
+  <section class="card" id="res-card" aria-label="Resultados">
+    <div class="success-bar" role="status">
+      <span class="success-icon" aria-hidden="true">✅</span>
+      <span id="success-msg">Todas las preguntas fueron completadas.</span>
+    </div>
+    <div class="submitted-bar" id="submitted-bar" style="display:none" role="status">
+      <span aria-hidden="true">🚀</span>
+      <span>La asignación fue enviada automáticamente a ReadWorks.</span>
+    </div>
+    <div class="res-header">
+      <span class="res-title">Respuestas</span>
+      <span class="pill pill-mc"   id="pill-mc">0 opción múltiple</span>
+      <span class="pill pill-open" id="pill-open">0 abiertas</span>
+    </div>
+    <div class="res-list" id="res-list"></div>
+    <button class="reset-btn" id="reset-btn">← Resolver otra asignación</button>
+  </section>
+
+</div><!-- /.wrapper -->
+
+<script>
+  // ── Estado de la UI ──────────────────────────────────────────────────────
+  let eventSource  = null;  // Conexión SSE activa
+  let lastLogItem  = null;  // Último elemento del log (para marcarlo "done")
+
+  // ── Instrucciones: toggle colapsable ────────────────────────────────────
+  function toggleHow() {
+    const body  = document.getElementById('how-body');
+    const arrow = document.getElementById('how-arrow');
+    const toggle = document.getElementById('how-toggle');
+    const isOpen = body.classList.toggle('visible');
+
+    arrow.classList.toggle('open', isOpen);
+    toggle.setAttribute('aria-expanded', isOpen);
+  }
+
+  // ── Iniciar resolución ───────────────────────────────────────────────────
+  function startSolving() {
+    const urlInput = document.getElementById('url-input');
+    const errMsg   = document.getElementById('err-msg');
+    const url      = urlInput.value.trim();
+
+    // Validación básica en el cliente
+    errMsg.style.display = 'none';
+    if (!url || !url.includes('readworks.org')) {
+      errMsg.textContent = '⚠ Pega una URL válida de ReadWorks.';
+      errMsg.style.display = 'block';
+      return;
+    }
+
+    // Bloquea controles y muestra la tarjeta de progreso
+    document.getElementById('solve-btn').disabled = true;
+    urlInput.disabled = true;
+    document.getElementById('prog-card').style.display = 'block';
+    document.getElementById('res-card').style.display  = 'none';
+    document.getElementById('log').innerHTML = '';
+    document.getElementById('prog-fill').style.width = '0%';
+    lastLogItem = null;
+
+    const autoSubmit = document.getElementById('auto-submit-chk').checked;
+
+    // Solicita al backend que inicie la tarea y devuelve el task_id
+    fetch('/solve', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url, auto_submit: autoSubmit }),
+    })
+      .then(r => r.json())
+      .then(data => {
+        if (data.error) { showError(data.error); return; }
+        listenProgress(data.task_id);
+      })
+      .catch(err => showError('Error de red: ' + err.message));
+  }
+
+  // ── Suscripción al stream SSE ────────────────────────────────────────────
+  function listenProgress(taskId) {
+    if (eventSource) eventSource.close();
+
+    eventSource = new EventSource(`/progress/${taskId}`);
+
+    eventSource.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+
+      if (data.ping) return;  // Keepalive — ignorar
+
+      if (data.error) {
+        showError(data.message || 'Error desconocido');
+        eventSource.close();
+        return;
+      }
+
+      if (data.message) {
+        document.getElementById('status-text').textContent = data.message;
+        if (data.progress >= 0)
+          document.getElementById('prog-fill').style.width = data.progress + '%';
+        addLog(data.message, data.done ? 'done' : 'active');
+      }
+
+      if (data.done) {
+        eventSource.close();
+        // Pequeña pausa para que la animación de la barra llegue al 100%
+        setTimeout(() => showResults(data.results, data.message, data.submitted), 500);
+      }
+    };
+
+    eventSource.onerror = () => {
+      showError('Se perdió la conexión con el agente.');
+      eventSource.close();
+    };
+  }
+
+  // ── Agregar ítem al log de pasos ─────────────────────────────────────────
+  function addLog(msg, type = 'active') {
+    const log = document.getElementById('log');
+
+    // Marca el paso anterior como completado
+    if (lastLogItem && type !== 'err') lastLogItem.className = 'log-item done';
+
+    const el = document.createElement('div');
+    el.className = `log-item ${type}`;
+    el.textContent = msg;
+    log.appendChild(el);
+    log.scrollTop = log.scrollHeight;   // Auto-scroll al último paso
+
+    lastLogItem = (type === 'active') ? el : null;
+  }
+
+  // ── Mostrar resultados finales ───────────────────────────────────────────
+  function showResults(results, finalMsg, submitted) {
+    document.getElementById('prog-card').style.display = 'none';
+    document.getElementById('res-card').style.display  = 'block';
+
+    if (finalMsg) document.getElementById('success-msg').textContent = finalMsg;
+    document.getElementById('submitted-bar').style.display = submitted ? 'flex' : 'none';
+
+    const list = document.getElementById('res-list');
+    list.innerHTML = '';
+    let mcCount = 0, openCount = 0;
+
+    results.forEach((result, index) => {
+      result.type === 'multiple' ? mcCount++ : openCount++;
+
+      const el = document.createElement('div');
+      el.className = 'res-item';
+      el.style.animationDelay = (index * 35) + 'ms';
+      el.innerHTML = `
+        <div class="res-n" aria-hidden="true">#${index + 1}</div>
+        <div class="res-body">
+          <div class="res-type ${result.type === 'multiple' ? 'mc' : 'open'}">
+            ${result.type === 'multiple' ? '● Opción múltiple' : '✎ Respuesta abierta'}
+          </div>
+          <div class="res-ans">${escapeHtml(result.answer)}</div>
+        </div>`;
+      list.appendChild(el);
+    });
+
+    document.getElementById('pill-mc').textContent   = `${mcCount} opción múltiple`;
+    document.getElementById('pill-open').textContent = `${openCount} abiertas`;
+  }
+
+  // ── Mostrar error y restaurar UI ─────────────────────────────────────────
+  function showError(msg) {
+    const errMsg = document.getElementById('err-msg');
+    errMsg.textContent = '⚠ ' + msg;
+    errMsg.style.display = 'block';
+    document.getElementById('solve-btn').disabled     = false;
+    document.getElementById('url-input').disabled     = false;
+    document.getElementById('prog-card').style.display = 'none';
+  }
+
+  // ── Reiniciar para nueva asignación ─────────────────────────────────────
+  function reset() {
+    document.getElementById('res-card').style.display   = 'none';
+    document.getElementById('prog-card').style.display  = 'none';
+    document.getElementById('solve-btn').disabled       = false;
+    document.getElementById('url-input').disabled       = false;
+    document.getElementById('url-input').value          = '';
+    document.getElementById('err-msg').style.display    = 'none';
+    document.getElementById('url-input').focus();
+  }
+
+  // ── Sanitización HTML para evitar XSS en las respuestas ─────────────────
+  function escapeHtml(str) {
+    return str
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+  }
+
+  // ── Registro de eventos ──────────────────────────────────────────────────
+  document.addEventListener('DOMContentLoaded', () => {
+    // Enter en el input de URL inicia la resolución
+    document.getElementById('url-input').addEventListener('keydown', e => {
+      if (e.key === 'Enter') startSolving();
+    });
+
+    // Botón resolver
+    document.getElementById('solve-btn').addEventListener('click', startSolving);
+
+    // Botón reiniciar
+    document.getElementById('reset-btn').addEventListener('click', reset);
+
+    // Toggle de instrucciones (click y teclado)
+    const howToggle = document.getElementById('how-toggle');
+    howToggle.addEventListener('click', toggleHow);
+    howToggle.addEventListener('keydown', e => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleHow(); }
+    });
+  });
+</script>
+</body>
+</html>

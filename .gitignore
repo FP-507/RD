@@ -1,0 +1,16 @@
+# Secretos — nunca subir
+.env
+browser_data/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+env/
+
+# Editor
+.vscode/
+.idea/
+*.DS_Store
