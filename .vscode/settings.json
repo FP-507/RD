@@ -1,0 +1,16 @@
+{
+  // Apunta al Python del entorno virtual del proyecto
+  "python.defaultInterpreterPath": "${workspaceFolder}/.venv/Scripts/python.exe",
+  "python.terminal.activateEnvironment": true,
+
+  // Abre run.py al iniciar el workspace
+  "workbench.startupEditor": "none",
+
+  // Oculta carpetas de ruido en el explorador
+  "files.exclude": {
+    "**/__pycache__": true,
+    "**/*.pyc": true,
+    ".venv": true,
+    "browser_data": true
+  }
+}

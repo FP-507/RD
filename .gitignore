@@ -11,6 +11,5 @@ venv/
 env/
 
 # Editor
-.vscode/
 .idea/
 *.DS_Store

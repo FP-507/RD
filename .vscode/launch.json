@@ -1,0 +1,14 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      // Configuración principal: lanza el agente completo con F5
+      "name": "▶ Iniciar ReadWorks Agent",
+      "type": "python",
+      "request": "launch",
+      "program": "${workspaceFolder}/run.py",
+      "console": "integratedTerminal",
+      "justMyCode": false
+    }
+  ]
+}
